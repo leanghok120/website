@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" /> <meta
+        name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>my progress on sinix</title>
+	</head>
+	<body>
+		<h1>My progress on sinix - my unix like kernel</h1>
+        <p>
+        I've been programming for quite a while but I never once had a <q>long term</q> side project
+        which I worked on whenever I was bored. I always had a project which I worked on till I considered
+        it completed and then I'd start a new project.
+        </p>
+        <p>This kernel I'm writing is my first ever long term project which I will come back to work on every once in a while.</p>
+        <p>
+            So far, the kernel has:
+            <ul>
+                <li>a serial driver</li>
+                <li>a PS/2 driver</li>
+                <li>
+                    a tiny framebuffer driver where I can draw filled and outlined rectangles
+                </li>
+                <li>pong running on the framebuffer</li>
+            </ul>
+        </p>
+
+        <hr />
+        <h2>Tuesday 28th April 2026</h2>
+        <p>I wrote this page which I will use to document my progress on the kernel.</p>
+
+        <video width="500" controls>
+            <source src="./assets/sinix-pong-2.mp4" type="video/mp4">
+        </video> 
+        <p>I added a back buffer to fix the flickering issue for pong</p>
+        <p>Next up, I wanna write a <code>kmalloc()</code> function so I can allocate a backbuffer on the heap instead of the stack</p>
+
+        <hr />
+        <h2>Saturday 25th April 2026</h2>
+        <video width="500" controls>
+            <source src="./assets/sinix-pong-1.mp4" type="video/mp4">
+        </video> 
+        <p>
+            I got pong running on the framebuffer but it's flickering really badly so I
+            need to figure out a way to fix that.
+        </p>
+        <p>I also wrote a tiny PS/2 driver so I can receive keyboard inputs which is pretty cool</p>
+
+        <hr />
+        <h2>Thursday 23rd April 2026</h2>
+		<figure>
+            <img src="./assets/sinix-rectangles.png" alt="sinix rectangles" width="500" />
+            <figcaption>Rectangles on the framebuffer</figcaption>
+		</figure>
+        <p>
+            I wrote a tiny framebuffer driver that can draw filled and outlined rectangles.
+        </p>
+        <p>This was surprisingly simple thanks to limine :3</p>
+
+        <hr />
+        <h2>Tuesday 21st April 2026</h2>
+        <p>I wrote a tiny serial driver in about 54 lines of C.</p>
+
+        <hr />
+        <h2>Sunday 19th Aprili 2026</h2>
+		<figure>
+            <img src="./assets/sinix-1.png" alt="sinix template" width="500" />
+            <figcaption>the limine starter template</figcaption>
+		</figure>
+        <p>Started this project and got barebones limine template running</p>
+
+        <footer>
+            <a href="./now.html">
+                Go Back
+            </a>
+        </footer>
+	</body>
+</html>
