@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" /> <meta
+        name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>lean's cozy cabin</title>
+        <link rel="stylesheet" href="/style.css">
+	</head>
+	<body>
+        <h1>xlib is a bad library</h1>
+        <p><em>24-09-2025</em></p>
+        <p>Xlib is a C library for communicating with the X server and it’s a
+        bad library. I’ve used Xlib in a couple of my projects like my buggy
+        tiling windows manager and the simple x11 bar I wrote in my previous
+        blog post. The main problem with Xlib is that it’s unintuitive, there’s
+        stuff that you <em>just</em> need to know like having to do an
+        <code>XFlush(dpy)</code> after drawing something or an
+        <code>XMapWindow()</code> to display a window after creating one. It’s
+        not too bad once you get used to the library but for beginners, it’s
+        really hard to pick up. Another problem is that there’s not much good
+        documentation for Xlib that tells you the stuff you <em>need</em> to
+        know. Most of the Xlib documentation is just a more crappy version of
+        the man page and the man page doesn’t actually tell you what you need to
+        know, it just tells you the function arguments and returns. Lastly, Xlib
+        is a very low level library so there’s a lot of boilerplate code needed
+        to do very simple stuff. I’m talking like 30 lines of code to just
+        display a window on the screen (including handling signals and wm quit
+        event).</p>
+        <p>Lately, I’ve been trying to find an Xlib + Xft wrapper that could
+        reduce the amount of boilerplate I need to write and the best one I’ve
+        found is <a href="https://git.suckless.org/libsl/log.html">suckless’s
+        libsl</a> which is a really small wrapper on top of Xlib and Xft which
+        they use in quite a couple of their projects.</p>
+        <footer>
+            <a href="/blog.html">
+                Go Back
+            </a>
+        </footer>
+	</body>
+</html>

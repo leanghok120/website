@@ -5,3 +5,7 @@ body {
     background: white;
     color: black;
 }
+
+img {
+	max-width: 800px;
+}

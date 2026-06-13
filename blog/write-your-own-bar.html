@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" /> <meta
+        name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>lean's cozy cabin</title>
+        <link rel="stylesheet" href="/style.css">
+	</head>
+	<body>
+        <h1>Tutorial: write your own bar</h1>
+        <p><em>06-09-2025</em></p>
+        <p>In this blog post, we’re going to be writing a simple X11 bar in C
+        with xlib. By the end of this blog post you will understand the basics
+        of xlib, ewmh, and have a cool minimal bar to play with.</p>
+        <p><a href="https://postimg.cc/Cd3BWfzV"><img
+        src="https://i.postimg.cc/qMRs6srg/myownbar.png"
+        alt="myownbar.png" /></a></p>
+        <p>Note: right now the bar only displays the current date and time.</p>
+        <p>Full code: <a
+        href="https://github.com/leanghok120/simplebar">https://github.com/leanghok120/simplebar</a></p>
+        <h2 id="assumptions">Assumptions</h2>
+        <p>This blog post assumes you know the basics of C and the X windowing
+        system.</p>
+        <h2 id="creating-a-simple-window">Creating a simple window</h2>
+        <p>We’ll start by creating our bar window:</p>
+        <pre>
+#include &lt;X11/Xlib.h&gt;
+#include &lt;X11/Xatom.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+
+int main() {
+  // init
+  Display *dpy = XOpenDisplay(NULL);
+  if (dpy == NULL) {
+    fprintf(stderr, "cant open display lol bozo");
+    return 1;
+  }
+  int scr = DefaultScreen(dpy);
+  int width = DisplayWidth(dpy, scr);
+  int height = 20;
+
+  // create the bar window
+  Window bar = XCreateSimpleWindow(dpy, RootWindow(dpy, scr), 0, 0,
+                                   width, height, 0,
+                                   BlackPixel(dpy, scr), WhitePixel(dpy, scr));
+  XStoreName(dpy, bar, "cool bar");
+
+  // show the bar window
+  XMapWindow(dpy, bar);
+  XFlush(dpy);
+
+  sleep(5);
+
+  // clean up
+  XDestroyWindow(dpy, bar);
+  XCloseDisplay(dpy);
+
+  return 0;
+}
+        </pre>
+        <p>The program above should create a window with a width of your screen
+        and a height of 20 but upon running the program you should see that the
+        bar window is positioned like a normal window.</p>
+        <p>If you’re using a tiling windows manager, you should see the bar
+        window tiled like this:</p>
+        <p><a href="https://postimg.cc/MnXtZFyQ"><img
+        src="https://i.postimg.cc/SxfPd0RD/tempbar2.png"
+        alt="tempbar2.png" /></a></p>
+        <p>This happens because we haven’t told the windows manager that our
+        window is supposed to be a bar so our windows manager just treats it
+        like a normal window.</p>
+        <h2 id="setting-ewmh-atoms">Setting ewmh atoms</h2>
+        <p>In X11, EWMH is a standard that windows managers and other x11 apps
+        use to communicate with each other. For example: by setting a value for
+        these EWMH atoms, the windows manager will be able to know if your
+        program is a normal window or a bar.</p>
+        <p>We can tell the windows manager that our window is a bar by setting a
+        specific EWMH atom called <code>_NET_WM_WINDOW_TYPE</code> to
+        <code>_NET_WM_WINDOW_TYPE_DOCK</code> like so:</p>
+        <pre>
+  // create the bar window
+  // ...
+
+  // set bar windows type to dock
+  Atom wm_window_type = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE", False);
+  Atom wm_window_type_dock = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE_DOCK", False);
+  XChangeProperty(dpy, bar, wm_window_type, XA_ATOM, 32, PropModeReplace, (unsigned char *)&wm_window_type_dock, 1);
+
+  // show the bar window
+  // ...
+        </pre>
+        <p>By doing this, your bar window becomes a dock and the windows manager
+        will be able to position it like a dock (in most tiling windows manager,
+        they just skip positioning dock windows)</p>
+        <p>When you compile and run the program, there should be a white window
+        at the top of your screen.</p>
+        <h2 id="adding-texts">Adding texts</h2>
+        <p>Now that we have a blank bar, it’s time to add in the information.
+        we’ll be adding in the current date and time.</p>
+        <p>Believe it or not, this part is probably the most complicated part of the
+        tutorial because of how drawing texts works in xlib.</p>
+        <p>We’ll start by loading the font in:</p>
+        <pre>
+
+  // set bar windows type to dock
+  // ...
+
+  // add text
+  Font font = XLoadFont(dpy, "fixed");
+  GC gc = XCreateGC(dpy, bar, 0, NULL);
+  XSetFont(dpy, gc, font);
+  XSetForeground(dpy, gc, BlackPixel(dpy, scr));
+
+   // ...
+  // clean up
+  XUnloadFont(dpy, font);
+  XFreeGC(dpy, gc);
+  XDestroyWindow(dpy, bar);
+  XCloseDisplay(dpy);
+        </pre>
+        <p>now we will add "hello world" to our bar window by replacing: <pre>sleep(5)</pre> with:</p>
+        <pre>
+  // show the bar window
+  // ...
+
+  // add text to the window
+  while (1) {
+    XDrawString(dpy, bar, gc, 15, 10, "hello world", 11);
+    XFlush(dpy);
+    sleep(1);
+  }
+
+  // ..
+        </pre>
+        <p>running the program, we should see a white window with a black text of "hello world".</p>
+        <p>let's replace "hello world" with the current date and time:</p>
+        <pre>
+  // add text to the window
+  char buf[64];
+  while (1) {
+    time_t now = time(NULL);
+    strftime(buf, sizeof(buf), "%a %d %b %Y %I:%M:%S %p", localtime(&now));
+
+    XClearWindow(dpy, bar); // avoid overlapping text
+    XDrawString(dpy, bar, gc, 15, 10, buf, strlen(buf));
+    XFlush(dpy);
+
+    sleep(1);
+  }
+        </pre>
+        <p>Now when we run the program, we should see our bar with the current
+        date and time.</p>
+        <h2 id="making-the-bar-a-bit-more-beautiful">Making the bar a bit more
+        beautiful</h2>
+        <p>We can all agree that currently our bar looks like shit. We can try
+        to fix this by centering the date and time.</p>
+        <p>In order to do this, we need to get the width of the date and time
+        text and subtract it from our width and divide it by 2:</p>
+        <pre>
+    // (in our loop)
+    int text_width = XTextWidth(XQueryFont(dpy, font), buf, strlen(buf));
+    int text_x = (width - text_width) / 2;
+    int text_y = height - 6;
+
+    XClearWindow(dpy, bar); // avoid overlapping text
+    XDrawString(dpy, bar, gc, text_x, text_y, buf, strlen(buf));
+    XFlush(dpy);
+        </pre>
+        <p>Running the program, we should see our beautiful bar:</p>
+        <p><a href="https://postimg.cc/k6Y9QYgK"><img
+        src="https://i.postimg.cc/KjxzydXq/finalbar.png"
+        alt="finalbar.png" /></a></p>
+        <p>We now have a simple and minimal bar.</p>
+        <h2 id="lastly">Lastly</h2>
+        <p>You might notice that the code in the repo contains a bit more lines
+        than the code in this blog post, this is because the code in the repo
+        also handles SIGINT and SIGTERM.</p>
+        <p>You might also notice that our bar has a slight delay where the
+        current date and time shows up a second after the window is mapped. This
+        is because we are just blindly drawing our text after every second. If
+        we want the text to show up as soon as the window is mapped, we would
+        need to also draw the text when our window receives an Expose event.</p>
+        <p>And that’s pretty much it, we just built a minimal X11 bar in C. From
+        here on out, you can expand it to show system stats, workspaces or make
+        it look even better.</p>
+        <p><a href="https://postimg.cc/Hck3GB4S"><img
+        src="https://i.postimg.cc/vBWKVK1d/barblack.png"
+        alt="barblack.png" /></a></p>
+        <footer>
+            <a href="/blog.html">
+                Go Back
+            </a>
+        </footer>
+	</body>
+</html>
