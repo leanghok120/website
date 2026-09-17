@@ -4,7 +4,16 @@ body {
     padding: 10px;
     background: white;
     color: black;
+    /*
+    background: #445140;
+    color: #e6e5d5;
+    font-size: 18px;
 }
+
+a {
+    color: #e6e5d5;
+}
+*/
 
 img {
 	max-width: 800px;
